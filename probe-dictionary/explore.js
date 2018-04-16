@@ -963,7 +963,15 @@ function getMeasurementCountsPerVersion() {
           // If so, increase the count.
           if (recording) {
             let k = recording.optout ? "optout" : "optin";
-            data[k] += 1;
+            // For release channel show only "optout" probes
+            if (channel === "release") {
+              if (k === "optout") {
+                data[k] += 1;
+              }  
+            }
+            else {
+              data[k] += 1;
+            }
           }
         });
         break;
@@ -1036,7 +1044,7 @@ function renderProbeStats() {
       .rangeRound([height, 0]);
 
   var z = d3.scaleOrdinal()
-      .range(["#98abc5", "#d0743c"]);
+      .range(["#d0743c", "#98abc5"]);
 
   var stack = d3.stack();
 
