@@ -938,11 +938,11 @@ function getMeasurementCountsPerVersion() {
     };
   }
 
-function releaseProbesCount(data, k) {
-  if ((channel === "release" && k === "optout") || (channel !== "release")) {
-    data[k] += 1;
+  function countProbe(data, k) {
+    if ((channel !== "release") || (k === "optout")) {
+      data[k] += 1;
+    }
   }
-}
 
   $.each(gProbeData, (id, data) => {
     let history = data.history[channel];
@@ -955,7 +955,7 @@ function releaseProbesCount(data, k) {
         let oldest = last(history);
         let versions = getVersionRange(channel, oldest.revisions);
         let k = oldest.optout ? "optout" : "optin";
-        releaseProbesCount(perVersionCounts[versions.first], k);
+        countProbe(perVersionCounts[versions.first], k);
         break;
       }
       case "is_in":
@@ -972,7 +972,7 @@ function releaseProbesCount(data, k) {
           // If so, increase the count.
           if (recording) {
             let k = recording.optout ? "optout" : "optin";
-            releaseProbesCount(data, k);
+            countProbe(data, k);
           }
         });
         break;
@@ -986,7 +986,7 @@ function releaseProbesCount(data, k) {
           if ((versions.first <= versionNum) && (versions.last >= versionNum) &&
               (expires != "never") && (parseInt(expires) <= versionNum)) {
             let k = newest.optout ? "optout" : "optin";
-            releaseProbesCount(data, k);
+            countProbe(data, k);
           }
         });
         break;
@@ -1009,6 +1009,9 @@ function releaseProbesCount(data, k) {
 
 function renderProbeStats() {
   var data = getMeasurementCountsPerVersion();
+  var hasOptoutData = (data.find(item => item.optout > 0) !== undefined);
+  var hasOptinData = (data.find(item => item.optin > 0) !== undefined);
+
 
   let last = array => array[array.length - 1];
   let version_constraint = $("#select_constraint").val();
@@ -1091,14 +1094,14 @@ function renderProbeStats() {
       .attr("text-anchor", "start")
       .attr("fill", "#000")
       .text("Count of " + constraintText + " probes");
-
-  if(optin_count == 0) {
-    columns = ["optout"];
+  var columns = [];
+  if (hasOptinData) {
+    columns.push("optin");
   }
-  else if (optout_count == 0) {
-    columns = ["optin"];
+  if (hasOptoutData) {
+    columns.push("optout");
   }
-
+  
   var legend = g.selectAll(".legend")
     .data(columns.reverse())
     .enter().append("g")
