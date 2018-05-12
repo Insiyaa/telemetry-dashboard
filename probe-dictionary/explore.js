@@ -16,6 +16,9 @@ var gDatasetMappings = null;
 var gView = null;
 var gDetailViewId = null;
 
+var optin_count = null;
+var optout_count = null;
+
 $(document)
   .ready(function () {
     // Permalink control
@@ -679,11 +682,7 @@ function getDatasetInfos(probeId, channel, state) {
       (probe.type == "simpleMeasurements" && ["number", "bool"].includes(state.details.kind))) {
     var versions = getVersionRange(channel, state.revisions);
     const distURL = getTelemetryDashboardURL('dist', probe.name, probe.type, channel, versions.first, versions.last);
-    const evoURL = getTelemetryDashboardURL('evo', probe.name, probe.type, channel, versions.first, versions.last);
-    datasetInfos.push("TMO dashboard: "
-                      + `<a href="${distURL}" target="_blank">distribution</a>`
-                      + ", "
-                      + `<a href="${evoURL}" target="_blank">evolution</a>`);
+    datasetInfos.push(`<a href="${distURL}" target="_blank">Measurements dashboard</a>`);
   }
 
   // Use counter dashboard links.
@@ -1007,6 +1006,8 @@ function getMeasurementCountsPerVersion() {
 
   let counts = [];
   $.each(perVersionCounts, (version, data) => {
+    optin_count = data.optin;
+    optout_count = data.optout;
     data.total = data.optin + data.optout;
     data.version = version;
     counts.push(data);
@@ -1102,7 +1103,6 @@ function renderProbeStats() {
       .attr("text-anchor", "start")
       .attr("fill", "#000")
       .text("Count of " + constraintText + " probes");
-
   var legendLabels = [];
   if (hasOptinData) {
     legendLabels.push("optin");
